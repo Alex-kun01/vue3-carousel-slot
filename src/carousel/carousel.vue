@@ -1,10 +1,12 @@
 <template>
     <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height, '--timer': anTime + 's'}">
+        <!-- 轮播内容容器 -->
         <div class="slide_wraper">
-            <!-- 轮播内容容器 -->
+            <!-- 移入的插槽容器 -->
             <div :class="{['show_page_' + direction]: 1, moveNone: isFirst}" :key="showKey">
                 <slot />
             </div>
+            <!-- 移出的插槽容器 -->
             <div :class="{['move_page_' + direction]: 1, moveNone: isFirst}" :key="moveKey" v-if="moveShow">
                 <slot />
             </div>
