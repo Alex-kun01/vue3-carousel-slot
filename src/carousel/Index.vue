@@ -12,7 +12,7 @@
 
 <script lang='ts'>
 import { reactive, toRefs } from 'vue';
-import Carousel from './carousel.vue';
+import Carousel from './Carousel.vue';
 
 export default {
  components: {
