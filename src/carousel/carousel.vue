@@ -1,12 +1,14 @@
 <template>
-    <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height}">
+    <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height, '--timer': anTime + 's'}">
         <div class="slide_wraper">
             <!-- 轮播内容容器 -->
             <div :class="{['show_page_' + direction]: 1, moveNone: isFirst}" :key="showKey">
                 <slot />
             </div>
             <div :class="{['move_page_' + direction]: 1, moveNone: isFirst}" :key="moveKey" v-if="moveShow">
-                <slot />
+                <keep-alive>
+                    <slot />
+                </keep-alive>
             </div>
             <!-- 两侧切换按钮 -->
             <div class="slide_prev" v-show="showPrevNext" @click="changeCurrent('prev')">&lt;</div>
@@ -40,7 +42,7 @@ export default {
     // 轮播速度 单位：ms
     speed: {
         type: Number,
-        default: 5000
+        default: 50000
     },
     // 是否显示两侧切换按钮
     showPrevNext: {
@@ -74,6 +76,7 @@ export default {
         showKey: 12345, // 显示插槽的key
         moveKey: 12345, // 移动插槽的key
         moveShow: false, // 移动插槽是否显示
+        anTime: 0.5, // 切换动画的时间
     });
 
     // 获取下一页索引
@@ -123,7 +126,7 @@ export default {
             keyx = true;
             // 销毁移动插槽
             state.moveShow = false;
-        }, 500)
+        }, state.anTime * 1000)
       }, 10);
     }
 
@@ -239,7 +242,7 @@ export default {
                 position: absolute;
                 top: 0;
                 left: 0;
-                animation: moveLeft 0.5s linear;
+                animation: moveLeft var(--timer) linear;
             }
 
             &_right {
@@ -248,7 +251,7 @@ export default {
                 position: absolute;
                 top: 0;
                 left: 0;
-                animation: moveRight 0.5s linear;
+                animation: moveRight var(--timer) linear;
             }
 
             &_first {
@@ -267,7 +270,7 @@ export default {
                 position: absolute;
                 top: 0;
                 left: 0;
-                animation: showLeft 0.5s linear;
+                animation: showLeft var(--timer) linear;
             }
 
             &_right {
@@ -276,7 +279,7 @@ export default {
                 position: absolute;
                 top: 0;
                 left: 0;
-                animation: showRight 0.5s linear;
+                animation: showRight var(--timer) linear;
             }
 
             &_first {
