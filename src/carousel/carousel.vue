@@ -76,7 +76,7 @@ export default {
             showKey: 12345, // 显示插槽的key
             moveKey: 12345, // 移动插槽的key
             moveShow: false, // 移动插槽是否显示
-            anTime: 0.5 // 切换动画的时间
+            anTime: 2 // 切换动画的时间
         });
 
         // 获取下一页索引
@@ -232,7 +232,7 @@ export default {
         width: 100%;
         height: 100%;
         position: relative;
-        overflow: hidden;
+        // overflow: hidden;
 
         .show_page {
 
