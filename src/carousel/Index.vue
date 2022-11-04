@@ -90,7 +90,7 @@ export default {
     .main_box {
         width: 800px;
         height: 400px;
-        background-color: cadetblue;
+        background-color: orange;
 
         .test_wraper {
             width: 100%;
@@ -105,8 +105,8 @@ export default {
             justify-content: space-around;
             
             img {
-                width: 300px;
-                height: 120px;
+                width: 380px;
+                height: 170px;
             }
         }
     }
