@@ -1,14 +1,21 @@
 <template>
-    <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height, '--timer': anTime + 's'}">
+    <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height, '--timer': animationTime + 's'}">
         <!-- 轮播内容容器 -->
         <div class="slide_wraper">
-            <!-- 移入的插槽容器 -->
-            <div :class="{['show_page_' + direction]: 1, moveNone: isFirst}" :key="showKey">
-                <slot />
+            <!--插槽1-->
+            <div class="slot_wraper" 
+            v-if="slot1Show"
+            :class="{['out_' + direction]: isMoveSlot, ['in_' + direction]: !isMoveSlot, moveNone: animationLock }"
+            >
+                <slot :index="getSlotIndex('slot1')" />
             </div>
-            <!-- 移出的插槽容器 -->
-            <div :class="{['move_page_' + direction]: 1, moveNone: isFirst}" :key="moveKey" v-if="moveShow">
-                <slot />
+            <!--插槽2-->
+            <div
+            v-if="slot2Show"
+            class="slot_wraper"
+            :class="{['out_' + direction]: !isMoveSlot, ['in_' + direction]: isMoveSlot,moveNone: animationLock}"
+            >
+                <slot :index="getSlotIndex('slot2')" />
             </div>
             <!-- 两侧切换按钮 -->
             <div class="slide_prev" v-show="showPrevNext" @click="changeCurrent('prev')">&lt;</div>
@@ -28,11 +35,6 @@ import {
     reactive, toRefs, onMounted, onUnmounted
 } from 'vue';
 
-/**
- * 1、通过插槽传入轮播页签显示的内容
- * 2、通过[changeIndex]方法暴露轮播的索引，外部自行处理
- *  */
-
 export default {
     emits: ['changeIndex'],
     props: {
@@ -44,7 +46,12 @@ export default {
         // 轮播速度 单位：ms
         speed: {
             type: Number,
-            default: 5000
+            default: 500000
+        },
+        // 切换动画的时间
+        animationTime: {
+            type: Number,
+            default: 0.5
         },
         // 是否显示两侧切换按钮
         showPrevNext: {
@@ -67,67 +74,97 @@ export default {
             default: '100%'
         }
     },
-    setup(props: any, context: any) {
+    setup(props: any, context) {
         let timer: any = null;
         let keyx: boolean = true; // 防抖
         const state: any = reactive({
-            nowIndex: 0, // 当前轮播的索引
-            isFirst: true, // 是否为第一次加载
+            asyncIndex: 0, // 异步索引
+            nowIndex: 0, // 当前实时索引（同步）
+            animationLock: true, // 是否为第一次加载
             direction: 'left', // 控制切换方向 left向左，right向右
             isReady: true, // 用于外部停止轮播锁止
-            showKey: 12345, // 显示插槽的key
-            moveKey: 12345, // 移动插槽的key
-            moveShow: false, // 移动插槽是否显示
-            anTime: 0.5 // 切换动画的时间
+            isMoveSlot: true, // 插槽1是否为【移出插槽】 两个插槽轮流当做【移出插槽】，true插槽1为【移出插槽】；false插槽2为【移出插槽】
+            slot1Show: true, // 插槽1是否显示
+            slot2Show: false, // 插槽2是否显示
         });
 
         // 获取下一页索引
         const nextIndex = (): number => {
-            if (state.nowIndex === props.list.length - 1) return 0;
-            return state.nowIndex + 1;
+            if (state.asyncIndex === props.list.length - 1) return 0;
+            return state.asyncIndex + 1;
         };
 
         // 获取上一页索引
         const prevIndex = (): number => {
-            if (state.nowIndex === 0) return props.list.length - 1;
-            return state.nowIndex - 1;
+            if (state.asyncIndex === 0) return props.list.length - 1;
+            return state.asyncIndex - 1;
         };
 
         // 处理方向
         const handleDirection = (index: number, from: string, direction?: string) => {
-        // 显示移动的插槽
-            state.moveShow = true;
             // 如果来源是next则直接改变direction
             // 如果来源是bom则计算direction
             if (from === 'bom') {
-                if (index > state.nowIndex) state.direction = 'left';
-                else if (index < state.nowIndex) state.direction = 'right';
+                if (index > state.asyncIndex) state.direction = 'left';
+                else if (index < state.asyncIndex) state.direction = 'right';
                 else state.direction = 'left';
             } else if (from === 'next') {
                 state.direction = direction;
             }
-            state.showKey = Date.now();
-            state.moveKey = Date.now();
         };
+
+        // 处理切换【移出插槽】逻辑
+        const handleSwitchSlot = (index: number) => {
+            // 插槽1是【移出插槽】
+            if (state.isMoveSlot) {
+                state.slot1Show = false; // 先隐藏掉插槽1
+                state.animationLock = true; // 打开动画锁
+                state.isMoveSlot = false; // 更改【移出插槽】 false：插槽2为【移出插槽】
+            }else {
+                // 插槽2是【移出插槽】
+                state.slot2Show = false;
+                state.animationLock = true;
+                state.isMoveSlot = true;
+            }
+
+            // 更新索引
+            state.asyncIndex = index;
+
+            // 一轮防抖结束
+            keyx = true;
+        }
 
         // 跳转页
         const goCurrent = (index: number, from: string, direction?: string) => {
-            if (!state.isReady) return; // 锁止
-            if (state.nowIndex === index) return; // 禁止点击同一索引
-            if (state.isFirst) state.isFirst = false; // 解开第一次加载无动画的锁
-            if (!keyx) return; // 防抖
+            // 禁止条件
+            if (!state.isReady) return; // 外部锁止
+            if (state.asyncIndex === index) return; // 禁止点击同一索引
+
+            // 防抖
+            if (!keyx) return;
             keyx = false;
-            // 处理方向和动画更新
+
+            // 处理轮播方向
             handleDirection(index, from, direction);
+
+            // 更新当前（实时索引）
+            state.nowIndex = index;
+            context.emit('changeIndex', index)
+
+            // 打开动画锁
+            state.animationLock = false;
+            
+            // 判断当前谁是【移出插槽】
+            // 插槽1是【移出插槽】
+            if (state.isMoveSlot) state.slot2Show = true;
+            // 插槽2是【移出插槽】
+            else state.slot1Show = true;
+            
+            // 移动结束
             setTimeout(() => {
-                state.nowIndex = index;
-                // 通知父组件索引切换
-                context.emit('changeIndex', index);
                 setTimeout(() => {
-                    keyx = true;
-                    // 销毁移动插槽
-                    state.moveShow = false;
-                }, state.anTime * 1000);
+                    handleSwitchSlot(index);
+                }, props.animationTime * 1000 - 50);
             }, 10);
         };
 
@@ -167,6 +204,20 @@ export default {
             stopGroup();
         };
 
+        const getSlotIndex = (slot: string) => {
+            if (slot === 'slot1') {
+                // 插槽1 且插槽1为【移出插槽】 则返回 旧索引
+                if (!state.isMoveSlot) return state.nowIndex;
+                // 新索引
+                else return state.asyncIndex;
+            }else {
+                // 插槽2 且插槽2为【移出插槽】 则返回 旧索引
+                if (state.isMoveSlot) return state.nowIndex;
+                // 新索引
+                else return state.asyncIndex;
+            }
+        }
+
         onMounted(() => {
             startGroup();
         });
@@ -182,48 +233,49 @@ export default {
             stopGroup,
             changeCurrent,
             outStopGroup,
-            outStartGroup
+            outStartGroup,
+            getSlotIndex
         };
     }
 };
 </script>
 
 <style lang="scss" scoped>
-@keyframes showLeft {
-    0% {
-        transform: translateX(100%);
-    }
-    100% {
-        transform: translateX(0);
-    }
-}
-@keyframes showRight {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(0);
-    }
-}
-
-@keyframes moveLeft {
-    0% {
-        transform: translateX(0%);
-    }
+// 【移出插槽】【左移】动画
+@keyframes outLeftx1 {
+    0% {}
     100% {
         transform: translateX(-100%);
     }
 }
 
-@keyframes moveRight {
-    0% {
-        transform: translateX(0%);
-    }
+// 【移出插槽】【右移】动画
+@keyframes outRightx1 {
+    0% {}
     100% {
         transform: translateX(100%);
     }
 }
 
+// 【移入插槽】 【左移】动画
+@keyframes inLeftx1 {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(0); 
+    }
+}
+
+// 【移入插槽】 【右移】动画
+@keyframes inRightx1 {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(0); 
+    }
+}
 
 .carousel_main {
     width: var(--width);
@@ -236,60 +288,31 @@ export default {
         position: relative;
         overflow: hidden;
 
-        .show_page {
+        // 插槽容器
+        .slot_wraper {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
 
-            &_left {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-                animation: moveLeft var(--timer) linear;
+            // 左【移出插槽】
+            &.out_left {
+                animation: outLeftx1 var(--timer) linear;
+            }
+            // 右【移出插槽】
+            &.out_right {
+                animation: outRightx1 var(--timer) linear;
             }
 
-            &_right {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-                animation: moveRight var(--timer) linear;
+            // 左【移入插槽】
+            &.in_left {
+                animation: inLeftx1 var(--timer) linear;
             }
 
-            &_first {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
-        }
-
-        .move_page{
-            &_left {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-                animation: showLeft var(--timer) linear;
-            }
-
-            &_right {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-                animation: showRight var(--timer) linear;
-            }
-
-            &_first {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
+            // 右【移入插槽】
+            &.in_right {
+                animation: inRightx1 var(--timer) linear;
             }
         }
 
@@ -351,14 +374,14 @@ export default {
                 // 分页按钮未激活样式
                 display: inline-block;
                 box-sizing: border-box;
-                width: 12px;
-                height: 12px;
+                width: 16px;
+                height: 16px;
                 background: #5D9BC6;
                 border-radius: 2px;
 
                 // 分页按钮激活样式
                 &.active {
-                    background: #3D92FA;
+                    background: red;
                     border: 2px solid #9FCAFF;
                     border-radius: 2px;
                 }
