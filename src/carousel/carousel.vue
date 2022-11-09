@@ -21,7 +21,7 @@
             <div class="slide_prev" v-show="showPrevNext" @click="changeCurrent('prev')">&lt;</div>
             <div class="slide_next" v-show="showPrevNext" @click="changeCurrent('next')">&gt;</div>
             <!-- 底部分页按钮 -->
-            <div class="slide_pages" v-if="showPaging">
+            <div class="slide_pages" v-if="showPaging && list.length > 1">
                 <li class="slide_li_x" v-for="(item, index) in list" :key="index" @click="goCurrent(index, 'bom')">
                     <span class="slide_point_x" :class="{active: index === nowIndex}"></span>
                 </li>
@@ -46,7 +46,7 @@ export default {
         // 轮播速度 单位：ms
         speed: {
             type: Number,
-            default: 500000
+            default: 5000
         },
         // 切换动画的时间
         animationTime: {
