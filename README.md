@@ -2,12 +2,12 @@
  * @Author: 西南开发二组蒋治坤 jiangzhikun@uino.com
  * @Date: 2022-11-03 10:58:17
  * @LastEditors: 西南开发二组蒋治坤 jiangzhikun@uino.com
- * @LastEditTime: 2022-11-10 14:53:38
+ * @LastEditTime: 2022-11-10 15:00:31
  * @FilePath: \vue-carousel-slot\README.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 
-# 基于 vue3 的自定义内容横向轮播组件
+# 基于 vue3 的自定义内容轮播组件
 
 ## 通过插槽自定义内容轮播
 
