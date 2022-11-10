@@ -5,7 +5,10 @@
             <!--插槽1-->
             <div class="slot_wraper" 
             v-if="slot1Show"
-            :class="{['out_' + direction]: isMoveSlot, ['in_' + direction]: !isMoveSlot, moveNone: animationLock }"
+            :class="{
+                ['out_' + ( groupType === 'transverse' ? direction : (direction === 'left' ? 'top' : 'bottom'))]: isMoveSlot,
+                ['in_' + ( groupType === 'transverse' ? direction : (direction === 'left' ? 'top' : 'bottom'))]: !isMoveSlot,
+                moveNone: animationLock }"
             >
                 <slot :index="getSlotIndex('slot1')" />
             </div>
@@ -13,15 +16,18 @@
             <div
             v-if="slot2Show"
             class="slot_wraper"
-            :class="{['out_' + direction]: !isMoveSlot, ['in_' + direction]: isMoveSlot,moveNone: animationLock}"
+            :class="{
+                ['out_' + ( groupType === 'transverse' ? direction : (direction === 'left' ? 'top' : 'bottom'))]: !isMoveSlot,
+                ['in_' + ( groupType === 'transverse' ? direction : (direction === 'left' ? 'top' : 'bottom'))]: isMoveSlot,
+                moveNone: animationLock}"
             >
                 <slot :index="getSlotIndex('slot2')" />
             </div>
             <!-- 两侧切换按钮 -->
-            <div class="slide_prev" v-show="showPrevNext" @click="changeCurrent('prev')">&lt;</div>
-            <div class="slide_next" v-show="showPrevNext" @click="changeCurrent('next')">&gt;</div>
+            <div class="slide_prev" v-show="showPrevNext && groupType !== 'vertical'" @click="changeCurrent('prev')">&lt;</div>
+            <div class="slide_next" v-show="showPrevNext && groupType !== 'vertical'" @click="changeCurrent('next')">&gt;</div>
             <!-- 底部分页按钮 -->
-            <div class="slide_pages" v-if="showPaging && list.length > 1">
+            <div class="slide_pages" :class="{[groupType]: 1}" v-if="showPaging && list.length > 1">
                 <li class="slide_li_x" v-for="(item, index) in list" :key="index" @click="goCurrent(index, 'bom')">
                     <span class="slide_point_x" :class="{active: index === nowIndex}"></span>
                 </li>
@@ -42,6 +48,11 @@ export default {
         list: {
             type: Array,
             default: []
+        },
+        // 滚动类型 ransverse横向 vertical竖向 
+        groupType: {
+            type: String,
+            default: 'transverse'
         },
         // 轮播速度 单位：ms
         speed: {
@@ -241,6 +252,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+// 移出 ---------------------------------------------------------------
+
 // 【移出插槽】【左移】动画
 @keyframes outLeftx1 {
     0% {}
@@ -256,6 +270,26 @@ export default {
         transform: translateX(100%);
     }
 }
+
+// 【移出插槽】【上移】动画
+@keyframes outTopx1 {
+    0% {}
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+// 【移出插槽】【下移】动画
+@keyframes outBottomtx1 {
+    0% {}
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+//  ------------------------------------------------------------------
+
+// 移入---------------------------------------------------------------
 
 // 【移入插槽】 【左移】动画
 @keyframes inLeftx1 {
@@ -276,6 +310,28 @@ export default {
         transform: translateX(0); 
     }
 }
+
+// 【移入插槽】 【上移】动画
+@keyframes inTopx1 {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(0); 
+    }
+}
+
+// 【移入插槽】 【下移】动画
+@keyframes inBottomx1 {
+    0% {
+        transform: translateY(100%);
+    }
+    100% {
+        transform: translateY(0); 
+    }
+}
+
+// ------------------------------------------------------------------
 
 .carousel_main {
     width: var(--width);
@@ -305,6 +361,17 @@ export default {
                 animation: outRightx1 var(--timer) linear;
             }
 
+            // 上【移出插槽】
+            &.out_top {
+                animation: outTopx1 var(--timer) linear;
+            }
+
+            // 下【移出插槽】
+            &.out_bottom {
+                animation: outBottomtx1 var(--timer) linear;
+            }
+
+            
             // 左【移入插槽】
             &.in_left {
                 animation: inLeftx1 var(--timer) linear;
@@ -313,6 +380,16 @@ export default {
             // 右【移入插槽】
             &.in_right {
                 animation: inRightx1 var(--timer) linear;
+            }
+
+            // 上【移入插槽】
+            &.in_top {
+                animation: inTopx1 var(--timer) linear;
+            }
+
+            // 下【移入插槽】
+            &.in_bottom {
+                animation: inBottomx1 var(--timer) linear;
             }
         }
 
@@ -354,14 +431,30 @@ export default {
 
         // 底部切换按钮样式
         .slide_pages {
-            width: 100%;
-            height: 12px;
             position: absolute;
-            bottom: 37px;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+            // 横向分页
+            &.transverse {
+                width: 100%;
+                height: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                bottom: 20px;
+                left: 0;
+            }
+
+            // 竖向分页
+            &.vertical {
+                width: 14px;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                top: 0;
+                right: 10px;
+            }
 
         .slide_li_x {
             display: inline-block;
@@ -374,15 +467,14 @@ export default {
                 // 分页按钮未激活样式
                 display: inline-block;
                 box-sizing: border-box;
-                width: 16px;
-                height: 16px;
-                background: #5D9BC6;
+                width: 14px;
+                height: 14px;
+                background: #079eac;
                 border-radius: 2px;
 
                 // 分页按钮激活样式
                 &.active {
-                    background: red;
-                    border: 2px solid #9FCAFF;
+                    background: rgb(242, 0, 0);
                     border-radius: 2px;
                 }
             }

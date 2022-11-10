@@ -2,7 +2,7 @@
  * @Author: 西南开发二组蒋治坤 jiangzhikun@uino.com
  * @Date: 2022-11-03 10:58:17
  * @LastEditors: 西南开发二组蒋治坤 jiangzhikun@uino.com
- * @LastEditTime: 2022-11-07 13:01:30
+ * @LastEditTime: 2022-11-10 14:53:38
  * @FilePath: \vue-carousel-slot\README.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -16,6 +16,7 @@
 ## 可传参数
 
 - `list` 轮播的数组，用于计算索引 【必传】
+- `groupType` 轮播的方向类型 默认值 transverse 【横向：transverse；竖向：vertical】
 - `speed` 轮播的速度，单位：毫秒 默认 5 秒
 - `showPrevNext` 是否显示两侧切换按钮 默认不显示
 - `showPaging` 是否显示分页按钮 默认不显示
