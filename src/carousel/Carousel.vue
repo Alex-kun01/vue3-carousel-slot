@@ -49,7 +49,7 @@ export default {
             type: Array,
             default: () => []
         },
-        // 滚动类型 ransverse横向 vertical竖向 
+        // 滚动类型 transverse横向 vertical竖向 
         groupType: {
             type: String,
             default: 'transverse'
