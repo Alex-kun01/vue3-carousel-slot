@@ -24,8 +24,8 @@
                 <slot :index="getSlotIndex('slot2')" />
             </div>
             <!-- 两侧切换按钮 -->
-            <div class="slide_prev" v-show="showPrevNext && groupType !== 'vertical'" @click="changeCurrent('prev')">&lt;</div>
-            <div class="slide_next" v-show="showPrevNext && groupType !== 'vertical'" @click="changeCurrent('next')">&gt;</div>
+            <div class="slide_prev" v-show="showPrevNext && groupType !== 'vertical' && list.length > 1" @click="changeCurrent('prev')">&lt;</div>
+            <div class="slide_next" v-show="showPrevNext && groupType !== 'vertical' && list.length > 1" @click="changeCurrent('next')">&gt;</div>
             <!-- 底部分页按钮 -->
             <div class="slide_pages" :class="{[groupType]: 1}" v-if="showPaging && list.length > 1">
                 <li class="slide_li_x" v-for="(item, index) in list" :key="index" @click="goCurrent(index, 'bom')">
@@ -47,7 +47,7 @@ export default {
     // 轮播数据数组
         list: {
             type: Array,
-            default: []
+            default: () => []
         },
         // 滚动类型 ransverse横向 vertical竖向 
         groupType: {
@@ -111,7 +111,13 @@ export default {
             return state.asyncIndex - 1;
         };
 
-        // 处理方向
+        /**
+         * 处理方向
+         * @param index 索引
+         * @param from 来源 bom 直接操作索引 other：左右切换按钮/自动轮播
+         * @param direction 轮播方向
+         */
+
         const handleDirection = (index: number, from: string, direction?: string) => {
             // 如果来源是next则直接改变direction
             // 如果来源是bom则计算direction
@@ -145,7 +151,13 @@ export default {
             keyx = true;
         }
 
-        // 跳转页
+        /**
+         * 跳转页
+         * @param index 索引
+         * @param from 来源 bom 直接操作索引 other：左右切换按钮/自动轮播
+         * @param direction 轮播方向
+         */
+
         const goCurrent = (index: number, from: string, direction?: string) => {
             // 禁止条件
             if (!state.isReady) return; // 外部锁止
@@ -203,18 +215,6 @@ export default {
             else return;
         };
 
-        // 外部-开始滚动 恢复正常滚动，解锁
-        const outStartGroup = () => {
-            state.isReady = true;
-            startGroup();
-        };
-
-        // 外部-停止滚动 注：此方法执行后，会锁定滚动，移出事件不会重新开始滚动
-        const outStopGroup = () => {
-            state.isReady = false;
-            stopGroup();
-        };
-
         const getSlotIndex = (slot: string) => {
             if (slot === 'slot1') {
                 // 插槽1 且插槽1为【移出插槽】 则返回 旧索引
@@ -237,6 +237,27 @@ export default {
             if (timer) clearInterval(timer);
         });
 
+        // 提供给外部调用的方法 ---------------------------------------------------------------------------------------------------------
+
+        // 外部-开始滚动 恢复正常滚动，解锁
+        const outStartGroup = () => {
+            state.isReady = true;
+            startGroup();
+        };
+
+        // 外部-停止滚动 注：此方法执行后，会锁定滚动，移出事件不会重新开始滚动
+        const outStopGroup = () => {
+            state.isReady = false;
+            stopGroup();
+        };
+
+        // 外部-跳转页
+        const outGoCurrent = (index: number) => {
+            goCurrent(index, 'bom');
+        };
+
+        // -----------------------------------------------------------------------------------------------------------------------------        
+
         return {
             ...toRefs(state),
             goCurrent,
@@ -245,7 +266,8 @@ export default {
             changeCurrent,
             outStopGroup,
             outStartGroup,
-            getSlotIndex
+            getSlotIndex,
+            outGoCurrent
         };
     }
 };
