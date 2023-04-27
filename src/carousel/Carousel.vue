@@ -2,7 +2,7 @@
     <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height, '--timer': animationTime + 's'}">
         <!-- 轮播内容容器 -->
         <div class="slide_wraper">
-            <!--插槽1-->
+            <!--轮播容器插槽1-->
             <div class="slot_wraper" 
             v-if="slot1Show"
             :class="{
@@ -12,7 +12,7 @@
             >
                 <slot :index="getSlotIndex('slot1')" />
             </div>
-            <!--插槽2-->
+            <!--轮播容器插槽2-->
             <div
             v-if="slot2Show"
             class="slot_wraper"
@@ -23,9 +23,6 @@
             >
                 <slot :index="getSlotIndex('slot2')" />
             </div>
-            <!-- 两侧切换按钮 -->
-            <div class="slide_prev" v-show="showPrevNext && groupType !== 'vertical' && list.length > 1" @click="changeCurrent('prev')">&lt;</div>
-            <div class="slide_next" v-show="showPrevNext && groupType !== 'vertical' && list.length > 1" @click="changeCurrent('next')">&gt;</div>
             <!-- 底部分页按钮 -->
             <div class="slide_pages" :class="{[groupType]: 1}" v-if="showPaging && list.length > 1">
                 <li class="slide_li_x" v-for="(item, index) in list" :key="index" @click="goCurrent(index, 'bom')">
@@ -33,6 +30,9 @@
                 </li>
             </div>
         </div>
+        <!-- 插槽-切换按钮 -->
+        <slot name="prevBtn" :prevClick="() => { changeCurrent('prev') }" v-if="showPrevNext && list.length > 1"></slot>
+        <slot name="nextBtn" :nextClick="() => { changeCurrent('next') }" v-if="showPrevNext && list.length > 1"></slot>
     </div>
 </template>
 
@@ -88,7 +88,7 @@ export default {
     setup(props: any, context) {
         let timer: any = null;
         let keyx: boolean = true; // 防抖
-        const state: any = reactive({
+        const state = reactive({
             asyncIndex: 0, // 异步索引
             nowIndex: 0, // 当前实时索引（同步）
             animationLock: true, // 是否为第一次加载
@@ -419,38 +419,6 @@ export default {
             animation: none!important;
         }
 
-        // 两侧切换按钮样式
-        .slide {
-
-            // 左侧样式
-            &_prev {
-                width: 30px;
-                height: 40px;
-                position: absolute;
-                top: 45%;
-                left: 0;
-                text-align: center;
-                line-height: 40px;
-                color: #fff;
-                font-size: 27px;
-                cursor: pointer;
-            }
-
-            // 右侧样式
-            &_next {
-                width: 30px;
-                height: 40px;
-                position: absolute;
-                top: 45%;
-                right: 0;
-                text-align: center;
-                line-height: 40px;
-                color: #fff;
-                font-size: 27px;
-                cursor: pointer;
-            }
-        }
-
         // 底部切换按钮样式
         .slide_pages {
             position: absolute;
@@ -501,6 +469,38 @@ export default {
                 }
             }
         }
+    }
+    }
+
+    // 两侧切换按钮样式
+    .slide {
+
+    // 左侧样式
+    &_prev {
+        width: 30px;
+        height: 40px;
+        position: absolute;
+        top: 45%;
+        left: -50px;
+        text-align: center;
+        line-height: 40px;
+        color: #000;
+        font-size: 27px;
+        cursor: pointer;
+    }
+
+    // 右侧样式
+    &_next {
+        width: 30px;
+        height: 40px;
+        position: absolute;
+        top: 45%;
+        right: -50px;
+        text-align: center;
+        line-height: 40px;
+        color: #000;
+        font-size: 27px;
+        cursor: pointer;
     }
     }
 }

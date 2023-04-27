@@ -1,20 +1,27 @@
 <!--
  * @Author: 西南开发二组蒋治坤 jiangzhikun@uino.com
  * @Date: 2022-11-02 09:45:29
- * @LastEditors: 西南开发二组蒋治坤 jiangzhikun@uino.com
- * @LastEditTime: 2022-11-16 10:57:04
+ * @LastEditors: jiangzhikun
+ * @LastEditTime: 2023-04-27 10:16:40
  * @FilePath: \vitevue3app\src\components\Carousel\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
     <div class="carousel">
         <div class="main_box">
-            <Carousel :list="list" :showPaging="true" :showPrevNext="true" >
+            <Carousel :list="list" :showPaging="true" :showPrevNext="true">
                 <template #default="props">
                     <div class="test_wraper">
                         <!-- 使用插槽参数'props'获取到index（当前索引） -->
                         <img :src="item.url" v-for="(item, index) in list[props.index]" :key="index">
                     </div>
+                </template>
+                <!-- 自定义两侧按钮样式 -->
+                <template #prevBtn="{ prevClick }">
+                    <div class="prev_btn" @click="prevClick"></div>
+                </template>
+                <template #nextBtn="{ nextClick }">
+                    <div class="next_btn" @click="nextClick"></div>
                 </template>
             </Carousel>
         </div>
@@ -100,7 +107,31 @@ export default {
     .main_box {
         width: 800px;
         height: 400px;
-        background-color: rgb(209, 210, 201);
+        background-color: #036b6b;
+
+        .prev_btn {
+            width: 40px;
+            height: 80px;
+            position: absolute;
+            top: calc(50% - 15px);
+            left: -60px;
+            cursor: pointer;
+            background-image: url('../assets/left_w.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
+
+        .next_btn {
+            width: 40px;
+            height: 80px;
+            position: absolute;
+            top: calc(50% - 15px);
+            right: -60px;
+            cursor: pointer;
+            background-image: url('../assets/right_w.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+        }
 
         .test_wraper {
             width: 100%;

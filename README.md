@@ -1,8 +1,8 @@
 <!--
  * @Author: 西南开发二组蒋治坤 jiangzhikun@uino.com
  * @Date: 2022-11-03 10:58:17
- * @LastEditors: 西南开发二组蒋治坤 jiangzhikun@uino.com
- * @LastEditTime: 2022-11-10 15:00:31
+ * @LastEditors: jiangzhikun
+ * @LastEditTime: 2023-04-27 10:20:31
  * @FilePath: \vue-carousel-slot\README.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -32,4 +32,5 @@
 
 - 轮播内容自行通过插槽传入，（！！！）插槽传参通过`index`暴露索引
 - 轮播组件宽高默认继承组件的父元素宽高
-- 分页按钮、两侧切换按钮的样式根据每个项目不同在组件内修改即可（该项目轮播分页按钮样式统一的情况下）
+- 底部索引按钮根据项目在组件内写
+- 切换按钮通过插槽传入 不传则不显示 具名插槽=> [ "prevBtn"，"nextBtn" ]; 通过暴露的方法调用切换具体看示例
