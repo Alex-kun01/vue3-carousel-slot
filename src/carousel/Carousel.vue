@@ -1,5 +1,11 @@
 <template>
-    <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup" :style="{'--width': width, '--height': height, '--timer': animationTime + 's'}">
+    <div class="carousel_main" @mouseover="stopGroup" @mouseout="startGroup"
+        :style="{
+            '--width': width,
+            '--height': height,
+            '--timer': animationTime + 's',
+            '--animationType': animationType,
+        }">
         <!-- 轮播内容容器 -->
         <div class="slide_wraper">
             <!--轮播容器插槽1-->
@@ -52,7 +58,12 @@ export default {
         // 滚动类型 transverse横向 vertical竖向 
         groupType: {
             type: String,
-            default: 'transverse'
+            default: 'vertical'
+        },
+        // 默认方向
+        defaultDir: {
+            type: String,
+            default: 'straight', // 正straight 反reverse
         },
         // 轮播速度 单位：ms
         speed: {
@@ -62,7 +73,7 @@ export default {
         // 切换动画的时间
         animationTime: {
             type: Number,
-            default: 0.5
+            default: 1
         },
         // 是否显示两侧切换按钮
         showPrevNext: {
@@ -83,7 +94,12 @@ export default {
         height: {
             type: String,
             default: '100%'
-        }
+        },
+        // 动画效果
+        animationType: {
+            type: String,
+            default: 'ease-out', // linear ease-in ease-in-out ease-out
+        },
     },
     setup(props: any, context) {
         let timer: any = null;
@@ -195,7 +211,9 @@ export default {
         const startGroup = () => {
             stopGroup();
             timer = setInterval(() => {
-                goCurrent(nextIndex(), 'next', 'left');
+                // 正向/反向 默认方向
+                if(props.defaultDir === 'reverse') goCurrent(prevIndex(), 'next', 'right');
+                else goCurrent(nextIndex(), 'next', 'left');
             }, props.speed);
         };
 
@@ -210,8 +228,14 @@ export default {
         // 两侧切换
         const changeCurrent = (type: string) => {
             if (!type || typeof type !== 'string') return;
-            if (type === 'prev') goCurrent(prevIndex(), 'next', 'right');
-            else if (type === 'next') goCurrent(nextIndex(), 'next', 'left');
+            if (type === 'prev') {
+                if (props.defaultDir === 'reverse') goCurrent(nextIndex(), 'next', 'left');
+                else goCurrent(prevIndex(), 'next', 'right');
+            }
+            else if (type === 'next') {
+                if (props.defaultDir === 'reverse') goCurrent(prevIndex(), 'next', 'right');
+                else goCurrent(nextIndex(), 'next', 'left');
+            }
             else return;
         };
 
@@ -376,42 +400,43 @@ export default {
 
             // 左【移出插槽】
             &.out_left {
-                animation: outLeftx1 var(--timer) linear;
+                // animation: outLeftx1 var(--timer) ease-out;
+                animation: outLeftx1 var(--timer) var(--animationType);
             }
             // 右【移出插槽】
             &.out_right {
-                animation: outRightx1 var(--timer) linear;
+                animation: outRightx1 var(--timer) var(--animationType);
             }
 
             // 上【移出插槽】
             &.out_top {
-                animation: outTopx1 var(--timer) linear;
+                animation: outTopx1 var(--timer) var(--animationType);
             }
 
             // 下【移出插槽】
             &.out_bottom {
-                animation: outBottomtx1 var(--timer) linear;
+                animation: outBottomtx1 var(--timer) var(--animationType);
             }
 
             
             // 左【移入插槽】
             &.in_left {
-                animation: inLeftx1 var(--timer) linear;
+                animation: inLeftx1 var(--timer) var(--animationType);
             }
 
             // 右【移入插槽】
             &.in_right {
-                animation: inRightx1 var(--timer) linear;
+                animation: inRightx1 var(--timer) var(--animationType);
             }
 
             // 上【移入插槽】
             &.in_top {
-                animation: inTopx1 var(--timer) linear;
+                animation: inTopx1 var(--timer) var(--animationType);
             }
 
             // 下【移入插槽】
             &.in_bottom {
-                animation: inBottomx1 var(--timer) linear;
+                animation: inBottomx1 var(--timer) var(--animationType);
             }
         }
 
